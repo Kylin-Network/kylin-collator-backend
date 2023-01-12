@@ -6,8 +6,8 @@ import { initializeCache } from './db';
 
 intializeDB();
 
-const redisPORT = Number(process.env.REDIS_PORT || 6379)
-initializeCache(redisPORT);
+// const redisPORT = Number(process.env.REDIS_PORT || 6379)
+// initializeCache(redisPORT);
 
 // Start the server
 const port = Number(process.env.PORT || 3000);
