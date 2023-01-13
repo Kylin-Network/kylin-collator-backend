@@ -1,6 +1,6 @@
 import { 
   Entity, PrimaryGeneratedColumn, Column, 
-  OneToOne, JoinColumn 
+  ManyToOne, JoinColumn 
 } from "typeorm";
 import { Feed } from "./Feed"
 
@@ -9,13 +9,13 @@ export class FeedHistory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  timestamp: number;
+  @Column({ type: "timestamp" })
+  timestamp: Date;
 
   @Column()
   value: number;
   
-  @OneToOne(() => Feed)
+  @ManyToOne(() => Feed)
   @JoinColumn()
   feed: Feed
 }
