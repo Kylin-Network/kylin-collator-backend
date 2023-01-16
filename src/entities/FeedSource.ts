@@ -1,6 +1,6 @@
 import { 
   Entity, PrimaryGeneratedColumn, Column, 
-  OneToOne, JoinColumn 
+  ManyToOne, JoinColumn 
 } from "typeorm";
 import { Feed } from "./Feed"
 
@@ -15,7 +15,7 @@ export class FeedSource {
   @Column()
   sourceDesc: string;
   
-  @OneToOne(() => Feed)
+  @ManyToOne(() => Feed)
   @JoinColumn()
   feed: Feed
 }

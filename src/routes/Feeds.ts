@@ -1,9 +1,14 @@
 import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { getConnection } from "typeorm";
+import { getConnection, Between } from "typeorm";
 import { User } from "../entities/User";
+import { Feed } from "../entities/Feed";
+import { FeedSource } from "../entities/FeedSource";
+import { FeedHistory } from 'src/entities/FeedHistory';
 import { paramMissingError } from '../shared/constants';
+import logger from '../shared/Logger';
+import datasource from '../../datasource.config'
 
 // Init shared
 const router = Router();
@@ -13,32 +18,49 @@ const router = Router();
  *                      Get All Users - "GET /api/users/all"
  ******************************************************************************/
 
-router.get('/all', async (req: Request, res: Response) => {
-    const users = await getConnection()
-        .getRepository(User)
-        .createQueryBuilder("user")
-        .getMany();
-    return res.status(OK).json({users});
+router.get('/list', async (req: Request, res: Response) => {
+    const feeds = await datasource
+        .getRepository(Feed)
+        .find({
+            select: {
+                feedName: true,
+                feedDesc: true,
+            },
+        });
+    let ret = { code: 0, message: "ok", data: feeds }
+    return res.status(OK).json(ret);
 });
 
 /******************************************************************************
  *                      Get User - "GET /api/users/:id"
  ******************************************************************************/
 
-router.get('/:id', async (req: Request, res: Response) => {
-    const { id } = req.params as ParamsDictionary;
-    const user = await getConnection()
-        .createQueryBuilder()
-        .select("user")
-        .from(User, "user")
-        .where("user.id = :id", { id: id })
-        .getOne();
-    if (!user) {
+router.get('/sources', async (req: Request, res: Response) => {
+    const {name} = req.query;
+
+    const feed = await datasource
+        .getRepository(FeedSource)
+        .find({
+
+            select: {
+                sourceName: true,
+                sourceDesc: true,
+            },
+            where: {
+                feed: {
+                    feedName: name as string,
+                },
+            },
+        });
+
+    if (!feed) {
         res.status(404);
         res.end();
         return;
     }
-    return res.status(OK).json({user});
+
+    let ret = { code: 0, message: "ok", data: feed }
+    return res.status(OK).json(ret);
 });
 
 
@@ -46,54 +68,36 @@ router.get('/:id', async (req: Request, res: Response) => {
  *                       Add One - "POST /api/users/add"
  ******************************************************************************/
 
-router.post('/add', async (req: Request, res: Response) => {
-    const {
-        user
-    } = req.body;
+router.get('/history', async (req: Request, res: Response) => {
+    const { name, start, end } = req.query;
+    let s = Number(start);
+    let e = Number(end);
+    let startData = new Date(s * 1000);
+    let endData = new Date(e * 1000);
 
-    if (!user) {
-        return res.status(BAD_REQUEST).json({
-            error: paramMissingError,
+    const feed = await datasource
+        .getRepository(FeedHistory)
+        .find({
+            select: {
+                timestamp: true,
+                value: true,
+            },
+            where: {
+                timestamp: Between(startData, endData),
+                feed: {
+                    feedName: name as string,
+                },
+            },
         });
+
+    if (!feed) {
+        res.status(404);
+        res.end();
+        return;
     }
-    await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(User)
-        .values([
-            {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                age: user.age
-            }
-        ])
-        .execute();
-    return res.status(CREATED).end();
-});
 
-
-/******************************************************************************
- *                       Update - "PUT /api/users/update"
- ******************************************************************************/
-
-router.put('/update', async (req: Request, res: Response) => {
-    const { user } = req.body;
-    if (!user && !user.id) {
-        return res.status(BAD_REQUEST).json({
-            error: paramMissingError,
-        });
-    }
-    await getConnection()
-        .createQueryBuilder()
-        .update(User)
-        .set({ 
-            firstName: user.firstName, 
-            lastName: user.lastName,
-            age: user.age
-        })
-        .where("id = :id", { id: user.id })
-        .execute();
-    return res.status(OK).end();
+    let ret = { code: 0, message: "ok", data: feed }
+    return res.status(OK).json(ret);
 });
 
 
