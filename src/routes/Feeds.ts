@@ -1,8 +1,7 @@
 import { Request, Response, Router } from 'express';
-import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
+import { BAD_REQUEST, CREATED, OK, NOT_FOUND, NOT_ACCEPTABLE } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { getConnection, Between } from "typeorm";
-import { User } from "../entities/User";
 import { Feed } from "../entities/Feed";
 import { FeedSource } from "../entities/FeedSource";
 import { FeedHistory } from 'src/entities/FeedHistory';
@@ -13,13 +12,14 @@ import datasource from '../../datasource.config'
 // Init shared
 const router = Router();
 
-
-/******************************************************************************
- *                      Get All Users - "GET /api/users/all"
- ******************************************************************************/
-
+/// Get Feed list
+///
+/// GET /api/feed/list
+///
+/// # Parameter: null
+///  
 router.get('/list', async (req: Request, res: Response) => {
-    const feeds = await datasource
+    const feed = await datasource
         .getRepository(Feed)
         .find({
             select: {
@@ -27,21 +27,33 @@ router.get('/list', async (req: Request, res: Response) => {
                 feedDesc: true,
             },
         });
-    let ret = { code: 0, message: "ok", data: feeds }
+    
+    if (!feed || !feed.length) {
+        let ret = { code: -1, message: "NOT_FOUND", data: {} }
+        return res.status(NOT_FOUND).json(ret);
+    }
+
+    let ret = { code: 0, message: "OK", data: feed }
     return res.status(OK).json(ret);
 });
 
-/******************************************************************************
- *                      Get User - "GET /api/users/:id"
- ******************************************************************************/
-
+/// Get Feed sources
+///
+/// GET /api/feed/sources
+///
+/// # Parameter:
+/// * `name` - Feed name
+///  
 router.get('/sources', async (req: Request, res: Response) => {
     const {name} = req.query;
+    if (!name) {
+        let ret = { code: -1, message: "NOT_ACCEPTABLE", data: {} }
+        return res.status(NOT_ACCEPTABLE).json(ret);
+    }
 
     const feed = await datasource
         .getRepository(FeedSource)
         .find({
-
             select: {
                 sourceName: true,
                 sourceDesc: true,
@@ -53,25 +65,42 @@ router.get('/sources', async (req: Request, res: Response) => {
             },
         });
 
-    if (!feed) {
-        res.status(404);
-        res.end();
-        return;
+    if (!feed || !feed.length) {
+        let ret = { code: -1, message: "NOT_FOUND", data: {} }
+        return res.status(NOT_FOUND).json(ret);
     }
 
-    let ret = { code: 0, message: "ok", data: feed }
+    let ret = { code: 0, message: "OK", data: feed }
     return res.status(OK).json(ret);
 });
 
-
-/******************************************************************************
- *                       Add One - "POST /api/users/add"
- ******************************************************************************/
-
-router.get('/history', async (req: Request, res: Response) => {
+/// Get History Data
+///
+/// GET /api/feed/history 
+///
+/// # Parameter:
+/// * `name` - Feed name
+/// * `start` - start of Unix timestamp
+/// * `end` - end of Unix timestamp
+///  
+interface ReqQuery {
+    name: string;
+    start: string;
+    end: string;
+}
+router.get('/history', async (
+    req: Request<{}, {}, {}, ReqQuery>, 
+    res: Response,
+    ) => {
     const { name, start, end } = req.query;
-    let s = Number(start);
-    let e = Number(end);
+    let s = parseInt(start);
+    let e = parseInt(end);
+    if (!name || isNaN(s) || isNaN(e)) {
+        let ret = { code: -1, message: "NOT_ACCEPTABLE", data: {} }
+        return res.status(NOT_ACCEPTABLE).json(ret);
+    }
+
+    // Unix timestamp to Date oject
     let startData = new Date(s * 1000);
     let endData = new Date(e * 1000);
 
@@ -85,40 +114,24 @@ router.get('/history', async (req: Request, res: Response) => {
             where: {
                 timestamp: Between(startData, endData),
                 feed: {
-                    feedName: name as string,
+                    feedName: name,
                 },
             },
         });
 
-    if (!feed) {
-        res.status(404);
-        res.end();
-        return;
+    if (!feed || !feed.length) {
+        let ret = { code: -1, message: "NOT_FOUND", data: {} }
+        return res.status(NOT_FOUND).json(ret);
     }
 
-    let ret = { code: 0, message: "ok", data: feed }
+    // Date to Unix timestamp
+    let feedData = feed.map( (val) => ([
+        Math.floor(val.timestamp.getTime() / 1000),
+        val.value,
+    ]))
+
+    let ret = { code: 0, message: "OK", data: feedData }
     return res.status(OK).json(ret);
 });
-
-
-/******************************************************************************
- *                    Delete - "DELETE /api/users/delete/:id"
- ******************************************************************************/
-
-router.delete('/delete/:id', async (req: Request, res: Response) => {
-    const { id } = req.params as ParamsDictionary;
-    await getConnection()
-        .createQueryBuilder()
-        .delete()
-        .from(User)
-        .where("id = :id", { id: id })
-        .execute();
-    return res.status(OK).end();
-});
-
-
-/******************************************************************************
- *                                     Export
- ******************************************************************************/
 
 export default router;

@@ -6,8 +6,8 @@ import FeedRouter from './Feeds';
 const router = Router();
 
 // Add sub-routes
-router.use('/users', UserRouter);
-router.use('/feeds', FeedRouter);
+router.use('/user', UserRouter);
+router.use('/feed', FeedRouter);
 
 // Export the base-router
 export default router;
