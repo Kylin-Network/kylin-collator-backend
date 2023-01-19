@@ -4,7 +4,7 @@
   "scripts": {
     "build": "node build.js",
     "lint": "eslint . --ext .ts",
-    "start": "node ./dist/index.js --env=production",
+    "start": "NODE_ENV=production node ./dist/index.js",
     "start:dev": "ts-node -r tsconfig-paths/register ./src",
     "test": "ts-node -r tsconfig-paths/register ./spec",
     "typeorm": "npx typeorm-ts-node-commonjs --dataSource datasource.config.ts",

@@ -11,9 +11,10 @@ const options = commandLineArgs([
     },
 ]);
 
+const env = process.env.NODE_ENV || options.env;
 // Set the env file
 const result2 = dotenv.config({
-    path: `./env/${options.env}.env`,
+    path: `./env/${env}.env`,
 });
 
 if (result2.error) {

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
-const env = 'development';
+const env = process.env.NODE_ENV || 'development';
 
 const ret = dotenv.config({
     path: `./env/${env}.env`,
@@ -19,8 +19,8 @@ function getConfig() {
         password: process.env.TYPEORM_PASSWORD,
         database: process.env.TYPEORM_DATABASE,
         synchronize: process.env.TYPEORM_SYNCHRONIZE,
-        migrations: [__dirname + '/src/migration/**/*.{ts,js}'],
-        entities: [__dirname + '/src/entities/**/*.{ts,js}'],
+        migrations: [__dirname + '/' + process.env.TYPEORM_MIGRATIONS],
+        entities: [__dirname + '/' + process.env.TYPEORM_ENTITIES],
     } as DataSourceOptions;
 }
 
