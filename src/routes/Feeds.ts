@@ -27,7 +27,7 @@ router.get('/list', async (req: Request, res: Response) => {
                 feedDesc: true,
             },
         });
-    
+
     if (!feed || !feed.length) {
         let ret = { code: -1, message: "NOT_FOUND", data: {} }
         return res.status(NOT_FOUND).json(ret);
@@ -45,7 +45,7 @@ router.get('/list', async (req: Request, res: Response) => {
 /// * `name` - Feed name
 ///  
 router.get('/sources', async (req: Request, res: Response) => {
-    const {name} = req.query;
+    const { name } = req.query;
     if (!name) {
         let ret = { code: -1, message: "NOT_ACCEPTABLE", data: {} }
         return res.status(NOT_ACCEPTABLE).json(ret);
@@ -89,9 +89,9 @@ interface ReqQuery {
     end: string;
 }
 router.get('/history', async (
-    req: Request<{}, {}, {}, ReqQuery>, 
+    req: Request<{}, {}, {}, ReqQuery>,
     res: Response,
-    ) => {
+) => {
     const { name, start, end } = req.query;
     let s = parseInt(start);
     let e = parseInt(end);
@@ -125,7 +125,7 @@ router.get('/history', async (
     }
 
     // Date to Unix timestamp
-    let feedData = feed.map( (val) => ([
+    let feedData = feed.map((val) => ([
         Math.floor(val.timestamp.getTime() / 1000),
         val.value,
     ]))

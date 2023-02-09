@@ -13,5 +13,5 @@ async function main () {
 	console.log(JSON.stringify(metadata.asLatest.toHuman(), null, 2));
 }
 
-main().catch(console.error);
+main().catch(console.error).finally(() => process.exit());
 

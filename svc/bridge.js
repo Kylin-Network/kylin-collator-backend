@@ -4,7 +4,6 @@ const { ApiPromise, Keyring } = require('@polkadot/api');
 const { WsProvider } = require('@polkadot/rpc-provider');
 
 const SCHEMA_PATH = path.join(__dirname, './', 'schema.json');
-const EXTRINSIC_DATA_PATH = path.join(__dirname, './', 'extrinsic_block.json');
 const START_BLOCK = process.env.START_BLOCK ? parseInt(process.env.START_BLOCK, 10) : 0
 const END_BLOCK = process.env.END_BLOCK ? parseInt(process.env.END_BLOCK, 10) : 10
 const WS_URL = process.env.WS_URL || 'ws://127.0.0.1:8844'
