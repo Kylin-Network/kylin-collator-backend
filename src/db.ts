@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import {createConnection} from "typeorm";
+import { createConnection } from "typeorm";
 import { Tedis } from "tedis";
 import logger from '../src/shared/Logger';
 
@@ -8,7 +8,7 @@ export async function intializeDB(): Promise<void> {
   logger.info('Database successfully initialized');
 }
 
-export function initializeCache(port: number | undefined) : unknown {
+export function initializeCache(port: number | undefined): unknown {
   const tedis = new Tedis({
     port: port,
     host: "127.0.0.1"

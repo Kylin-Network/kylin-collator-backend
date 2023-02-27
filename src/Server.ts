@@ -20,7 +20,7 @@ const app = express();
  ***********************************************************************************/
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Show routes called in console during development
@@ -56,7 +56,7 @@ app.set('views', viewsDir);
 const staticDir = path.join(__dirname, 'public');
 app.use(express.static(staticDir));
 app.get('*', (req: Request, res: Response) => {
-    res.sendFile('index.html', {root: viewsDir});
+    res.sendFile('index.html', { root: viewsDir });
 });
 
 // Export express instance
