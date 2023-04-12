@@ -25,7 +25,7 @@
     "pg": "^8.2.1",
     "reflect-metadata": "^0.1.13",
     "tedis": "^0.1.12",
-    "typeorm": "^0.3.11",
+    "typeorm": "^0.3.14",
     "winston": "^3.2.1"
   },
   "devDependencies": {
